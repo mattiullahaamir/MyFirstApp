@@ -32,7 +32,6 @@ export async function up(i: any) {
       },
     },
     createdAt: { type: Sequelize.DATE },
-    updatedAt: { type: Sequelize.DATE },
   });
 }
 
