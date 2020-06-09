@@ -61,10 +61,9 @@ export class UserService {
 
   // update single user
   public async updateUser(userId: string, data: Partial<IUsers>): Promise<any> {
-    await this.usersRepository.update(
-      { where: { id: userId.toString() } },
-      data,
-    );
+    await this.usersRepository.update(data, {
+      where: { id: userId.toString() },
+    });
     return await this.usersRepository.findOne({
       where: { id: userId.toString() },
     });
