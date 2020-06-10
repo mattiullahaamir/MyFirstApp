@@ -7,6 +7,7 @@ import {
   Get,
   Param,
   Put,
+  Delete,
 } from '@nestjs/common';
 import { UserService } from '../../services/user/user.service';
 import { IUsers } from '../../interfaces/users.interface';
@@ -15,7 +16,7 @@ import { IUsers } from '../../interfaces/users.interface';
 export class UserController {
   constructor(private userService: UserService) {}
 
-  @Post('register')
+  @Post('')
   public async register(@Body() user: IUsers): Promise<any> {
     const result: any = await this.userService.create(user);
     if (!result.success) {
@@ -25,12 +26,12 @@ export class UserController {
   }
 
   // get all user data
-  @Get('alluser')
+  @Get('')
   public async getAllUser(): Promise<any> {
     return await this.userService.getAllUser();
   }
 
-  // get all user data
+  // get single user data
   @Get(':id')
   public async getSingleUser(@Param('id') userId: string): Promise<any> {
     return await this.userService.getSingleUser(userId);
@@ -45,15 +46,9 @@ export class UserController {
     return this.userService.updateUser(userid, data);
   }
 
-  // for checking purpose
-  @Get('check')
-  public getName(): string {
-    const name: any = this.userService.getMessage();
-
-    if (name.success) {
-      return name;
-    } else {
-      throw new HttpException(name.message, HttpStatus.BAD_REQUEST);
-    }
+  // delete user
+  @Delete(':id')
+  public async deleteUser(@Param('id') dltId: string): Promise<any> {
+    return await this.userService.deleteUser(dltId);
   }
 }

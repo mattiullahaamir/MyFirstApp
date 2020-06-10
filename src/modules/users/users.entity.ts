@@ -8,6 +8,7 @@ import {
   UpdatedAt,
   HasMany,
   TableOptions,
+  DeletedAt,
 } from 'sequelize-typescript';
 import { Accounts } from '../accounts/accounts.entity';
 
@@ -62,11 +63,30 @@ export class Users extends Model<Users> {
   })
   public Salt: string;
 
+  // delete flag
+  // @Column({
+  //   type: DataType.BOOLEAN,
+  //   defaultValue: false,
+  //   allowNull: false,
+  //   set: function(value) {
+  //     if (value === 'true') value = true;
+  //     if (value === 'false') value = false;
+  //     this.setDataValue('hidden', value);
+  //   },
+  // })
+  // public isDeleted: boolean;
+
+  paranoid: true;
+  timestamps: true;
+
   @CreatedAt
   public createdAt: Date;
 
   @UpdatedAt
   public updatedAt: Date;
+
+  @DeletedAt
+  public deletedAt: Date;
 
   @HasMany(() => Accounts, 'UserId')
   public Accounts: Accounts[];

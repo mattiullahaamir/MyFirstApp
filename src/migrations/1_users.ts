@@ -29,8 +29,20 @@ export async function up(i: any) {
       type: Sequelize.CHAR(250),
       allowNull: true,
     },
+    // isDeleted: {
+    //   type: Sequelize.BOOLEAN,
+    //   defaultValue: false,
+    //   allowNull: false,
+    //   set: function(value) {
+    //     if (value === 'true') value = true;
+    //     if (value === 'false') value = false;
+    //     this.setDataValue('hidden', value);
+    //   },
+    // },
+
     createdAt: { type: Sequelize.DATE },
     updatedAt: { type: Sequelize.DATE },
+    deletedAt: { type: Sequelize.DATE },
   });
 }
 

@@ -42,7 +42,9 @@ export class UserService {
 
   // get all user
   public async getAllUser(): Promise<any> {
-    const data = await this.usersRepository.findAll();
+    const data = await this.usersRepository.findAll({
+      where: { deletedAt: null },
+    });
     return [...data];
   }
 
@@ -51,6 +53,7 @@ export class UserService {
     const data = await this.usersRepository.findOne({
       where: {
         id: userId.toString(),
+        deletedAt: null,
       },
     });
     if (!data) {
@@ -59,7 +62,7 @@ export class UserService {
     return { data };
   }
 
-  // update single user
+  // update user
   public async updateUser(userId: string, data: Partial<IUsers>): Promise<any> {
     await this.usersRepository.update(data, {
       where: { id: userId.toString() },
@@ -69,21 +72,26 @@ export class UserService {
     });
   }
 
-  // find user method
-  // private async findUser(userId: string): Promise<any> {
-  //   const user = await this.usersRepository.findOne({
-  //     where: {
-  //       id: userId.toString(),
-  //     },
-  //   });
-  //   if (!user) {
-  //     throw new NotFoundException('User could not found.');
-  //   }
-  //   return { user };
-  // }
+  // delete user
+  public async deleteUser(dltId: string): Promise<any> {
+    const result = await this.usersRepository.destroy({
+      where: {
+        id: dltId.toString(),
+        deletedAt: null,
+      },
+    });
 
-  // method for checking
-  public getMessage() {
-    return 'Matti Ullah Aamir Qureshi Farooqi';
+    if (!result) {
+      throw new NotFoundException('User could not found.');
+    } else {
+      return { isDeleted: 'Record deleted successfully.' };
+    }
+
+    // return await this.usersRepository.findOne({
+    //   where: {
+    //     id: dltId.toString(),
+    //     deletedAt: !null,
+    //   },
+    // });
   }
 }

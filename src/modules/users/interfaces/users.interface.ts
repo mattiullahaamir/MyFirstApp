@@ -5,4 +5,5 @@ export interface IUsers {
   Password: string;
   Salt: string;
   Accounts: [];
+  //isDeleted: boolean; // delete flag
 }

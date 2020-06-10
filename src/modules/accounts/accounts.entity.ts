@@ -8,6 +8,7 @@ import {
   ForeignKey,
   BelongsTo,
   TableOptions,
+  DeletedAt,
 } from 'sequelize-typescript';
 //import { TableOptions } from 'sequelize-typescript';
 import { Users } from '../users/users.entity';
@@ -49,8 +50,13 @@ export class Accounts extends Model<Accounts> {
     targetKey: 'id',
   })
   public Users: Users;
+
   @CreatedAt
   public createdAt: Date;
+
   @UpdatedAt
   public updatedAt: Date;
+
+  @DeletedAt
+  public deletedAt: Date;
 }
