@@ -8,6 +8,7 @@ import {
   Param,
   Put,
   Delete,
+  Res,
 } from '@nestjs/common';
 import { UserService } from '../../services/user/user.service';
 import { IUsers } from '../../interfaces/users.interface';
@@ -17,12 +18,12 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   @Post('')
-  public async register(@Body() user: IUsers): Promise<any> {
+  public async register(@Res() res, @Body() user: IUsers): Promise<any> {
     const result: any = await this.userService.create(user);
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
     }
-    return result;
+    return res.status(HttpStatus.OK).json(result);
   }
 
   // get all user data
