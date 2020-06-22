@@ -34,7 +34,11 @@ export class UserService {
         .createHmac('sha256', user.Password + user.Salt)
         .digest('hex');
       const newUser: any = await this.usersRepository.create<Users>(user);
-      const jwtToken = jwt.sign(user, process.env.JWT_KEY, jwtConfig);
+      const jwtToken = jwt.sign(user, process.env.JWT_KEY, {
+        algorithm: 'HS256',
+        expiresIn: '60s',
+      });
+
       newUser.Token = jwtToken;
       if (newUser) {
         const account = await this.accountsService.create(newUser.id);
@@ -66,7 +70,7 @@ export class UserService {
     return [...data];
   }
 
-  // get single user
+  // get single user using [id]
   public async getSingleUser(userId: string): Promise<any> {
     const data = await this.usersRepository.findOne({
       where: {
@@ -76,6 +80,22 @@ export class UserService {
     });
     if (!data) {
       throw new NotFoundException('User could not found.');
+    }
+    //console.log(data.Username);
+
+    return { data };
+  }
+
+  // get single user using [username]
+  public async findOneUser(username: string): Promise<any> {
+    const data = await this.usersRepository.findOne({
+      where: {
+        Username: username.toString(),
+        deletedAt: null,
+      },
+    });
+    if (!data) {
+      throw new NotFoundException('Username could not found.');
     }
     return { data };
   }
