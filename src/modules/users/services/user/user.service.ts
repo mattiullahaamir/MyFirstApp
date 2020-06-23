@@ -30,13 +30,19 @@ export class UserService {
       };
     } else {
       user.Salt = crypto.randomBytes(128).toString('base64');
+      //console.log('before hash - password - [' + user.Password + ' ]');
+
       user.Password = crypto
         .createHmac('sha256', user.Password + user.Salt)
-        .digest('hex');
+        .digest('hex')
+        .trim();
+
+      //console.log('after hash - password - [' + user.Password + ' ]');
+
       const newUser: any = await this.usersRepository.create<Users>(user);
       const jwtToken = jwt.sign(user, process.env.JWT_KEY, {
         algorithm: 'HS256',
-        expiresIn: '60s',
+        expiresIn: '5min',
       });
 
       newUser.Token = jwtToken;

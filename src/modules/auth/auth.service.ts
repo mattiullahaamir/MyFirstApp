@@ -12,20 +12,30 @@ export class AuthService {
   ) {}
 
   async validateUser(username: string, password: string): Promise<any> {
-    //console.log('username ' + username + ' password ' + password);
+    console.log('username ' + username + ' password ' + password);
 
     const user = await this.userService.findOneUser(username);
 
-    console.log(user.data.Username);
+    // const valueCheck = Buffer.from(user.data.Password, 'hex');
+    // console.log('valueCheck [' + valueCheck + ' ]');
+    console.log('Salt -> :  [ ' + user.data.Salt + ' ].');
     //return user;
-    //user.Salt = crypto.randomBytes(128).toString('base64');
+    //user.data.Salt = crypto.randomBytes(128).toString('base64');
     //const salt = crypto.randomBytes(128).toString('base64');
 
     const _password = crypto
       .createHmac('sha256', password + user.data.Salt)
-      .digest('hex');
+      .digest('hex')
+      .trim();
+
+    // const _password2 = crypto
+    //   .createHmac('sha256', password + user.data.Salt)
+    //   .digest('hex')
+    //   .trim();
 
     console.log('hash - password - ' + _password);
+
+    // console.log('hash - password2 - [' + _password2 + ' ]');
 
     //const match = await crypto.timingSafeEqual(pass, user.Password);
     console.log(user.data.Password + ' === ' + _password);
@@ -45,7 +55,11 @@ export class AuthService {
    * sub = to get the [ userid] from database.?.
    */
   async login(user: any) {
-    const payload = { username: user.Username, sub: user.Id };
+    console.log('login called');
+
+    console.log('payload user: \n' + user);
+
+    const payload = { username: user.data.Username, sub: user.Id };
     return {
       access_token: this.jwtService.sign(payload),
     };

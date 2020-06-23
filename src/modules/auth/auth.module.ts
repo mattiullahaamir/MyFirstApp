@@ -13,8 +13,8 @@ import { AuthController } from './auth.controller';
     UsersModule,
     PassportModule,
     JwtModule.register({
-      secret: jwtConstants.secret,
-      signOptions: { expiresIn: '30s' },
+      secret: process.env.JWT_KEY,
+      signOptions: { algorithm: 'HS256', expiresIn: '5min' },
     }),
   ],
 
