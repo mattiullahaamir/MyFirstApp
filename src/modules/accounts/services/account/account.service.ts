@@ -28,4 +28,14 @@ export class AccountService {
       };
     }
   }
+
+  // get Accounts By User Id
+  public async getAccountsByUserId(UserId: number): Promise<object> {
+    const accounts = await Accounts.findAll<Accounts>({
+      where: { UserId },
+      attributes: { exclude: ['createdAt', 'updatedAt'] },
+    });
+
+    return accounts ? accounts : [];
+  }
 }

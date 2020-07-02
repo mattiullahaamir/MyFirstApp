@@ -9,6 +9,7 @@ import {
   Put,
   Delete,
   Res,
+  Headers,
 } from '@nestjs/common';
 import { UserService } from '../../services/user/user.service';
 import { IUsers } from '../../interfaces/users.interface';
@@ -51,5 +52,31 @@ export class UserController {
   @Delete(':id')
   public async deleteUser(@Param('id') dltId: string): Promise<any> {
     return await this.userService.deleteUser(dltId);
+  }
+
+  //login
+  @Post('login')
+  public async login(@Res() res, @Body() credentials: any): Promise<any> {
+    const result: any = await this.userService.login(credentials);
+    if (!result.success) {
+      throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
+    }
+    return res.status(HttpStatus.OK).json(result);
+  }
+
+  //authentication
+  @Post(':id')
+  public async authenticate(
+    @Param() param,
+    @Res() res,
+    @Headers() headers,
+  ): Promise<any> {
+    const token = headers.authorization.replace('Bearer ', '');
+
+    const result: any = await this.userService.authenticate(param.id, token);
+    if (!result.success) {
+      throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
+    }
+    return res.status(HttpStatus.OK).json(result);
   }
 }

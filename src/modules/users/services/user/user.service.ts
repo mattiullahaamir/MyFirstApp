@@ -8,6 +8,7 @@ import { Users } from '../../users.entity';
 import { jwtConfig } from 'src/config/jwtConfig';
 import { AccountService } from 'src/modules/accounts/services/account/account.service';
 import { IUsers } from '../../interfaces/users.interface';
+import { Accounts } from 'src/modules/accounts/accounts.entity';
 
 @Injectable()
 export class UserService {
@@ -40,10 +41,11 @@ export class UserService {
       //console.log('after hash - password - [' + user.Password + ' ]');
 
       const newUser: any = await this.usersRepository.create<Users>(user);
-      const jwtToken = jwt.sign(user, process.env.JWT_KEY, {
-        algorithm: 'HS256',
-        expiresIn: '5min',
-      });
+      const jwtToken = jwt.sign(
+        { id: user.id, username: user.Username, email: user.Email },
+        process.env.JWT_KEY,
+        jwtConfig,
+      );
 
       newUser.Token = jwtToken;
       if (newUser) {
@@ -92,20 +94,6 @@ export class UserService {
     return { data };
   }
 
-  // get single user using [username]
-  public async findOneUser(username: string): Promise<any> {
-    const data = await this.usersRepository.findOne({
-      where: {
-        Username: username.toString(),
-        deletedAt: null,
-      },
-    });
-    if (!data) {
-      throw new NotFoundException('Username could not found.');
-    }
-    return { data };
-  }
-
   // update user
   public async updateUser(userId: string, data: Partial<IUsers>): Promise<any> {
     await this.usersRepository.update(data, {
@@ -137,5 +125,93 @@ export class UserService {
     //     deletedAt: !null,
     //   },
     // });
+  }
+
+  // login function
+  public async login(credentials: any): Promise<object> {
+    const user = await this.usersRepository.findOne<Users>({
+      where: {
+        Username: credentials.Username,
+      },
+      attributes: { exclude: ['createdAt', 'updatedAt'] },
+    });
+
+    if (!user) {
+      return {
+        success: false,
+        message: 'User does not exists.',
+      };
+    }
+
+    const inputPassword = crypto
+      .createHmac('sha256', credentials.Password + user.Salt.trim())
+      .digest('hex');
+
+    const isPasswordCorrect = user.Password.trim() === inputPassword.trim();
+
+    if (!isPasswordCorrect) {
+      return {
+        success: false,
+        message: 'Your password is incorrect.',
+      };
+    }
+
+    // get the user accounts
+    const accounts = await this.accountsService.getAccountsByUserId(user.id);
+    // generate the new 'JWT-Token' for login user
+    const jwtToken = jwt.sign(
+      { id: user.id, username: user.Username, email: user.Email },
+      process.env.JWT_KEY,
+      {
+        algorithm: 'HS256',
+        expiresIn: '1 day',
+      },
+    );
+
+    const response = {
+      user: {
+        id: user.id,
+        username: user.Username.trim(),
+        email: user.Email.trim(),
+        accounts,
+      },
+      token: jwtToken,
+      success: true,
+    };
+    return response;
+  }
+
+  // user authentication
+
+  public async authenticate(id: number, token: string): Promise<any> {
+    const user = await this.usersRepository.findOne<Users>({
+      where: {
+        id,
+      },
+      include: [{ model: Accounts, where: { UserId: id }, required: true }],
+    });
+
+    //decode the jwt token
+    const decodedToken = jwt.verify(token, process.env.JWT_KEY, jwtConfig);
+    const isTokenValid = decodedToken.id === Number(id);
+
+    if (!isTokenValid) {
+      return {
+        success: false,
+        message: 'User is not authorized.',
+      };
+    }
+
+    const response = {
+      user: {
+        id: user.id,
+        username: user.Username.trim(),
+        email: user.Email.trim(),
+        accounts: user.Accounts,
+      },
+      token,
+      success: true,
+    };
+    return response;
   }
 }
